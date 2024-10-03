@@ -1,0 +1,55 @@
+name: Build and Release Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install setuptools wheel
+
+      - name: Build package
+        run: |
+          python setup.py sdist bdist_wheel
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-${{ matrix.os }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ./artifacts/**/*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+          overwrite: true

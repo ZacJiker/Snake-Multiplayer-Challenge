@@ -41,12 +41,13 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
+          name: dist-ubuntu-latest
           path: ./artifacts
 
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: ./artifacts/**/*
+          artifacts: ./artifacts/**/*  # Inclure les fichiers du package
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           name: Release ${{ github.ref }}
